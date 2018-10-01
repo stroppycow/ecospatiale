@@ -1,6 +1,7 @@
 library(rgdal)
 library(rgeos)
 library(xlsx)
+library(igraph)
 
 #------------------------------------------------#
 #           Shapefile des communes               #
@@ -110,3 +111,30 @@ communes <- communes[!(communes@data$insee %in% c("55039","55050","55139","55189
 #------------------------------------------------#
 
 europe<-readOGR(dsn=path.expand("../shapefile/europe"),layer="NUTS_RG_03M_2016_4326_LEVL_0")
+
+
+#------------------------------------------------#
+#              Communes adjacentes               #
+#------------------------------------------------#
+
+#Importation du fichier csv en data.frame
+adj_table <- read.csv("../data/adj_comm.csv",header=T)
+
+length(adj_table$insee)==length(unique(adj_table$insee)) #Pas de doublons de lignes
+
+
+#Construction d'un graphe de communes
+graph_communes <- make_empty_graph(n=nrow(adj_table),directed=FALSE)
+table_id_insee<-data.frame(id=1:nrow(adj_table))
+row.names(table_id_insee)<-adj_table$insee
+
+ajouterNoeud<-function(i){
+  vecNoeud<-strsplit(as.character(adj_table[i,"insee_voisins"]),split="[|]")[[1]]
+  vecNoeud<-as.numeric(table_id_insee[vecNoeud,"id"])
+  noeudOrigine<-as.numeric(table_id_insee[as.character(adj_table[i,"insee"]),"id"])
+  noeudOrigineRep<-rep(noeudOrigine,length(vecNoeud))
+  arretes<-c(rbind(noeudOrigineRep,vecNoeud))
+  add_edges(graph_communes, arretes)
+}
+
+sapply(1:nrow(adj_table),ajouterNoeud)
