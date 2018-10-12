@@ -24,6 +24,13 @@ file.rename("../data/base-cc-evol-struct-pop-2015/base-cc-evol-struct-pop-2015.x
 unlink(x="../data/base-cc-evol-struct-pop-2015", recursive = T)
 unlink("../data/base-cc-evol-struct-pop-2015.zip")
 
+#Base diplômes
+download.file("https://www.insee.fr/fr/statistiques/fichier/2862015/base-cc-dipl-formation-2014.zip", "../data/base-cc-dipl-formation-2014.zip")
+unzip("../data/base-cc-dipl-formation-2014.zip",exdir="../data/base-cc-dipl-formation-2014",overwrite = T)
+file.rename("../data/base-cc-dipl-formation-2014/base-cc-dipl-formation-2014.xls", "../data/base-cc-dipl-formation-2014.xls")
+unlink(x="../data/base-cc-dipl-formation-2014", recursive = T)
+unlink("../data/base-cc-dipl-formation-2014.zip")
+
 #Shapefile des communes 1 javnvier 2017
 download.file("http://osm13.openstreetmap.fr/~cquest/openfla/export/communes-20170111-shp.zip", "../shapefile/communes2017.zip")
 unzip("../shapefile/communes2017.zip",exdir="../shapefile/communes2017",overwrite = T)
