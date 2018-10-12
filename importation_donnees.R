@@ -5,6 +5,8 @@ library(igraph)
 library(maptools)
 library(spdep)
 library(graph)
+library(gdata)
+
 
 
 # Objectifs :
@@ -555,7 +557,6 @@ sapply(1:nrow(corrections),function(x){
 
 summary(carteCommune.nb)
 
-
 rm(g_commune)
 rm(communes_moins_adj)
 rm(arete_communes_moins_adj)
@@ -586,8 +587,22 @@ fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.charac
 
 fusion[is.na(fusion$nom),c("insee","LIBGEO")]
 fusion[is.na(fusion$LIBGEO),c("insee","nom")]
-
-rm(fusion)
 #Ok!
 
-fusion<-merge(data.frame(insee=as.character(pres2$insee),pct_macron_votants=pres2$pct_macron_votants),data.frame(insee=base_cc$CODGEO,pop=base_cc$P15_POP,tchom=base_cc$P15_CHOM1564/base_cc$P15_ACT1564),by="insee")
+rm(fusion)
+
+
+#------------------------------------------------#
+#               Base demographique               #
+#------------------------------------------------#
+
+data_demo<-read.xls("../data/base-cc-evol-struct-pop-2015.xls",sheet = 1,skip=5)
+
+#Retrait des villages français de la Meuse détruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
+data_demo <- data_demo[!(data_demo$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
+
+fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.character(communes@data$nom)),data.frame(insee=as.character(data_demo$CODGEO),LIBGEO=as.character(data_demo$LIBGEO)),by="insee",all=T)
+
+fusion[is.na(fusion$nom),c("insee","LIBGEO")]
+fusion[is.na(fusion$LIBGEO),c("insee","nom")]
+#Ok!
