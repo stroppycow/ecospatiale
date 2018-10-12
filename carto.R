@@ -111,17 +111,14 @@ x1<-bbox(communes)[1,1]
 x2<-bbox(communes)[1,2]
 communes@data$Colors <- as.character(vPal4[as.numeric(communes@data$hs)])
 metro<-subset(communes,substr(as.character(communes@data$insee),1,2)!="97")
-nrow(communes@data)
-
-plot(metro[c(25616,34987),],fill="red")
 
 pdf("../sorties/auto2.pdf",width=7,height=7.5)
 par(mar=c(0.1,0.1,4,3))
 plot(metro, col=metro@data$Colors,lty=0)
 legend("topright",
-       legend = c('BB','BH','HB','HH'),       
-       bty = "n",
-       fill = vPal4,
+      legend = c('BB','BH','HB','HH'),       
+      bty = "n",
+      fill = vPal4,
        cex = 0.5,
        title = "Classes")
 dev.off()

@@ -585,6 +585,9 @@ base_cc$insee<-as.character(base_cc$CODGEO)
 #Retrait des villages français de la Meuse détruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 base_cc <- base_cc[!(base_cc$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
 
+#Retrait des îles
+base_cc <- base_cc[!(base_cc$CODGEO %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
+
 
 #Modification des types des variables base_cc$LIBGEO<-as.character(base_cc$LIBGEO)
 for(i in 5:ncol(base_cc)){
@@ -609,6 +612,10 @@ data_demo<-read.xls("../data/base-cc-evol-struct-pop-2015.xls",sheet = 1,skip=5)
 
 #Retrait des villages français de la Meuse détruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 data_demo <- data_demo[!(data_demo$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
+
+#Retrait des îles
+data_demo <- data_demo[!(data_demo$CODGEO %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
+
 data_demo$insee <- as.character(data_demo$CODGEO)
 
 fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.character(communes@data$nom)),data.frame(insee=as.character(data_demo$CODGEO),LIBGEO=as.character(data_demo$LIBGEO)),by="insee",all=T)
@@ -618,13 +625,35 @@ fusion[is.na(fusion$LIBGEO),c("insee","nom")]
 #Ok!
 
 rm(fusion)
-#------------------------------------------------#
-#                 Base CSP+Diplome               #
-#------------------------------------------------#
 
-data_csp<-read.xls("../data/base-cc-dipl-formation-2014.xls",sheet = 1,skip=5)
 
-fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.character(communes@data$nom)),data.frame(insee=as.character(data_csp$CODGEO),LIBGEO=as.character(data_csp$LIBGEO)),by="insee",all=T)
+#------------------------------------------------------#
+#                       FUSION                         #
+#------------------------------------------------------#
 
-nrow(fusion[is.na(fusion$nom),c("insee","LIBGEO")])
-fusion[is.na(fusion$LIBGEO),c("insee","nom")]
+communes <- merge(communes,base_cc,by="insee")
+communes <- merge(communes,data_demo,by="insee")
+communes <- merge(communes,pres2,by="insee")
+communes <- communes@data[,c("insee","nom","P15_POP.x","MED15","P15_CHOM1564","P15_ACT1564","P15_POP0014","P15_POP1529","P15_POP3044","P15_POP4559","P15_POP6074","P15_POP7589","P15_POP90P","C15_POP15P","C15_POP15P_CS1","C15_POP15P_CS2","C15_POP15P_CS3","C15_POP15P_CS4","C15_POP15P_CS5","C15_POP15P_CS6","C15_POP15P_CS7","C15_POP15P_CS8","C15_F15P","pct_macron_votants")]
+communes <- communes@data$P15_POP.x
+
+
+communes@data$TCHOM_15 <- communes@data$P15_CHOM1564/communes@data$P15_ACT1564
+communes@data$F_PROP <- communes@data$C15_F15P/communes@data$C15_POP15P
+
+communes@data$P15_PROP0014<-communes@data$P15_POP0014/communes@data$P15_POP*100
+communes@data$P15_PROP1529<-communes@data$P15_POP1529/communes@data$P15_POP*100
+communes@data$P15_PROP3044<-communes@data$P15_POP3044/communes@data$P15_POP*100
+communes@data$P15_PROP4559<-communes@data$P15_POP4559/communes@data$P15_POP*100
+communes@data$P15_PROP6074<-communes@data$P15_POP6074/communes@data$P15_POP*100
+communes@data$P15_PROP7589<-communes@data$P15_POP7589/communes@data$P15_POP*100
+communes@data$P15_PROP90P<-communes@data$P15_POP90P/communes@data$P15_POP*100
+
+communes@data$C15_PROP15P_CS1<-communes@data$C15_POP15P_CS1/communes@data$C15_POP15P*100
+communes@data$C15_PROP15P_CS2<-communes@data$C15_POP15P_CS2/communes@data$C15_POP15P*100
+communes@data$C15_PROP15P_CS3<-communes@data$C15_POP15P_CS3/communes@data$C15_POP15P*100
+communes@data$C15_PROP15P_CS4<-communes@data$C15_POP15P_CS4/communes@data$C15_POP15P*100
+communes@data$C15_PROP15P_CS5<-communes@data$C15_POP15P_CS5/communes@data$C15_POP15P*100
+communes@data$C15_PROP15P_CS6<-communes@data$C15_POP15P_CS6/communes@data$C15_POP15P*100
+communes@data$C15_PROP15P_CS7<-communes@data$C15_POP15P_CS7/communes@data$C15_POP15P*100
+communes@data$C15_PROP15P_CS8<-communes@data$C15_POP15P_CS8/communes@data$C15_POP15P*100
