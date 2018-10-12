@@ -17,6 +17,13 @@ file.rename("../data/base_cc_comparateur/base_cc_comparateur.xls", "../data/base
 unlink(x="../data/base_cc_comparateur", recursive = T)
 unlink("../data/base_cc_comparateur.zip")
 
+#Base comparaison démographique
+download.file("https://www.insee.fr/fr/statistiques/fichier/3564100/base-cc-evol-struct-pop-2015.zip", "../data/base-cc-evol-struct-pop-2015.zip")
+unzip("../data/base-cc-evol-struct-pop-2015.zip",exdir="../data/base-cc-evol-struct-pop-2015",overwrite = T)
+file.rename("../data/base-cc-evol-struct-pop-2015/base-cc-evol-struct-pop-2015.xls", "../data/base-cc-evol-struct-pop-2015.xls")
+unlink(x="../data/base-cc-evol-struct-pop-2015", recursive = T)
+unlink("../data/base-cc-evol-struct-pop-2015.zip")
+
 #Shapefile des communes 1 javnvier 2017
 download.file("http://osm13.openstreetmap.fr/~cquest/openfla/export/communes-20170111-shp.zip", "../shapefile/communes2017.zip")
 unzip("../shapefile/communes2017.zip",exdir="../shapefile/communes2017",overwrite = T)
