@@ -606,3 +606,15 @@ fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.charac
 fusion[is.na(fusion$nom),c("insee","LIBGEO")]
 fusion[is.na(fusion$LIBGEO),c("insee","nom")]
 #Ok!
+
+rm(fusion)
+#------------------------------------------------#
+#                 Base CSP+Diplome               #
+#------------------------------------------------#
+
+data_csp<-read.xls("../data/base-cc-dipl-formation-2014.xls",sheet = 1,skip=5)
+
+fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.character(communes@data$nom)),data.frame(insee=as.character(data_csp$CODGEO),LIBGEO=as.character(data_csp$LIBGEO)),by="insee",all=T)
+
+nrow(fusion[is.na(fusion$nom),c("insee","LIBGEO")])
+fusion[is.na(fusion$LIBGEO),c("insee","nom")]
