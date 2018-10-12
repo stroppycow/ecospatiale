@@ -4,7 +4,7 @@ library(xlsx)
 library(igraph)
 library(maptools)
 library(spdep)
-library(graph) 
+library(graph)
 
 
 # Objectifs :
@@ -569,8 +569,14 @@ rm(corrections)
 #Importation de la table
 base_cc <- read.xlsx2("../data/base_cc_comparateur.xls",sheetIndex = 1,startRow=6,header=T)
 
-#Modification des types des variables
-base_cc$LIBGEO<-as.character(base_cc$LIBGEO)
+#Prise en compte des fusions de communes (ligne NA dans la base cc)
+base_cc <-base_cc[!is.na(base_cc$P15_POP),]
+
+#Retrait des villages français de la Meuse détruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
+base_cc <- base_cc[!(base_cc$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
+
+
+#Modification des types des variables base_cc$LIBGEO<-as.character(base_cc$LIBGEO)
 for(i in 5:ncol(base_cc)){
   base_cc[,i]<-as.numeric(as.character(base_cc[,i]))
 }
@@ -579,9 +585,9 @@ for(i in 5:ncol(base_cc)){
 fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.character(communes@data$nom)),data.frame(insee=as.character(base_cc$CODGEO),LIBGEO=as.character(base_cc$LIBGEO)),by="insee",all=T)
 
 fusion[is.na(fusion$nom),c("insee","LIBGEO")]
-nrow(fusion[is.na(fusion$nom),c("insee","LIBGEO")])
-#Pb : Beaucoup de nouvelles communes fusion d'anciennes entre 2015 et mai 2017 à traiter
-# 1294 cas à traiter
-
 fusion[is.na(fusion$LIBGEO),c("insee","nom")]
+
+rm(fusion)
 #Ok!
+
+fusion<-merge(data.frame(insee=as.character(pres2$insee),pct_macron_votants=pres2$pct_macron_votants),data.frame(insee=base_cc$CODGEO,pop=base_cc$P15_POP,tchom=base_cc$P15_CHOM1564/base_cc$P15_ACT1564),by="insee")
