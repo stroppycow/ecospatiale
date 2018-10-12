@@ -24,6 +24,8 @@ file.rename("../data/base-cc-evol-struct-pop-2015/base-cc-evol-struct-pop-2015.x
 unlink(x="../data/base-cc-evol-struct-pop-2015", recursive = T)
 unlink("../data/base-cc-evol-struct-pop-2015.zip")
 
+
+
 #Base diplômes
 download.file("https://www.insee.fr/fr/statistiques/fichier/2862015/base-cc-dipl-formation-2014.zip", "../data/base-cc-dipl-formation-2014.zip")
 unzip("../data/base-cc-dipl-formation-2014.zip",exdir="../data/base-cc-dipl-formation-2014",overwrite = T)
