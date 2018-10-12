@@ -4,31 +4,24 @@ library(RColorBrewer)
 library(classInt)
 library(maptools)
 library(plyr)
+library(spdep)
 
 legend.col <- function(col, lev){
-  
   opar <- par
-  
   n <- length(col)
-  
   bx <- par("usr")
-  
   box.cx <- c(bx[2] + (bx[2] - bx[1]) / 1000,
               bx[2] + (bx[2] - bx[1]) / 1000 + (bx[2] - bx[1]) / 50)
   box.cy <- c(bx[3], bx[3])
   box.sy <- (bx[4] - bx[3]) / n
-  
   xx <- rep(box.cx, each = 2)
-  
   par(xpd = TRUE)
   for(i in 1:n){
-    
     yy <- c(box.cy[1] + (box.sy * (i - 1)),
             box.cy[1] + (box.sy * (i)),
             box.cy[1] + (box.sy * (i)),
             box.cy[1] + (box.sy * (i - 1)))
     polygon(xx, yy, col = col[i], border = col[i])
-    
   }
   par(new = TRUE)
   plot(0, 0, type = "n",
@@ -91,4 +84,44 @@ plot(europe,col=remplissage,add=TRUE)
 title(main="Abstention au 2nd tour de l'élection présidentielle de 2017")
 box(which = "plot", lty = "solid")
 legend.col(col = couleurAbs, lev = 0:99)
+dev.off()
+
+nb<-poly2nb(communes)
+cont.w<-nb2listw(nb,style="W")
+
+
+### Test de Moran, DonnÃ©es Brutes
+moran.test(communes@data$pct_macron_votants, cont.w)
+
+### Graphique de Moran
+moran.plot(x=communes@data$pct_macron_votants,cont.w,xlab="Macron",ylab="Taux dans le voisinage",labels=as.character(communes@data$insee))
+
+
+### Représentation cartographique du graphique de Moran
+vPal4 <- rev(brewer.pal(n = 4, name = "RdYlBu"))
+v_tx<-lag.listw(cont.w,communes@data$pct_macron_votants)
+communes@data$v_tx<-v_tx
+communes@data$hs[communes@data$v_tx>=mean(communes@data$pct_macron_votants) & communes@data$pct_macron_votants>=mean(communes@data$pct_macron_votants)]<-4.0
+communes@data$hs[communes@data$v_tx>=mean(communes@data$pct_macron_votants) & communes@data$pct_macron_votants<mean(communes@data$pct_macron_votants)]<-3.0
+communes@data$hs[communes@data$v_tx<mean(communes@data$pct_macron_votants) & communes@data$pct_macron_votants>=mean(communes@data$pct_macron_votants)]<-2.0
+communes@data$hs[communes@data$v_tx<mean(communes@data$pct_macron_votants) & communes@data$pct_macron_votants<mean(communes@data$pct_macron_votants)]<-1.0
+
+communes@data$hs<-communes@data$hs
+x1<-bbox(communes)[1,1]
+x2<-bbox(communes)[1,2]
+communes@data$Colors <- as.character(vPal4[as.numeric(communes@data$hs)])
+metro<-subset(communes,substr(as.character(communes@data$insee),1,2)!="97")
+nrow(communes@data)
+
+plot(metro[c(25616,34987),],fill="red")
+
+pdf("../sorties/auto2.pdf",width=7,height=7.5)
+par(mar=c(0.1,0.1,4,3))
+plot(metro, col=metro@data$Colors,lty=0)
+legend("topright",
+       legend = c('BB','BH','HB','HH'),       
+       bty = "n",
+       fill = vPal4,
+       cex = 0.5,
+       title = "Classes")
 dev.off()

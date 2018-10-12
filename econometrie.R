@@ -2,10 +2,11 @@
 #                   MCO                     #
 #-------------------------------------------#
 
-communes@data <- merge(communes@data,base_cc,by.x="insee",by.y="CODGEO")
-communes@data <- merge(x=communes@data,y=data_demo[,setdiff(names(data_demo),c("LIBGEO","REG","DEP","P15_POP"))],by.x="insee",by.y="CODGEO")
-communes@data <- merge(x=communes@data,y=pres2,by="insee")
-communes@data <- communes@data[,c("insee","P15_POP","MED15","P15_CHOM1564","P15_ACT1564","P15_POP0014","P15_POP1529","P15_POP3044","P15_POP4559","P15_POP6074","P15_POP7589","P15_POP90P","C15_POP15P","C15_POP15P_CS1","C15_POP15P_CS2","C15_POP15P_CS3","C15_POP15P_CS4","C15_POP15P_CS5","C15_POP15P_CS6","C15_POP15P_CS7","C15_POP15P_CS8","C15_F15P","pct_macron_votants")]
+communes <- merge(communes,base_cc,by="insee")
+communes <- merge(communes,data_demo,by="insee")
+communes <- merge(communes,pres2,by="insee")
+communes <- communes@data[,c("insee","nom","P15_POP.x","MED15","P15_CHOM1564","P15_ACT1564","P15_POP0014","P15_POP1529","P15_POP3044","P15_POP4559","P15_POP6074","P15_POP7589","P15_POP90P","C15_POP15P","C15_POP15P_CS1","C15_POP15P_CS2","C15_POP15P_CS3","C15_POP15P_CS4","C15_POP15P_CS5","C15_POP15P_CS6","C15_POP15P_CS7","C15_POP15P_CS8","C15_F15P","pct_macron_votants")]
+communes <- communes@data$P15_POP.x
 
 communes@data$TCHOM_15 <- communes@data$P15_CHOM1564/communes@data$P15_ACT1564
 communes@data$F_PROP <- communes@data$C15_F15P/communes@data$C15_POP15P

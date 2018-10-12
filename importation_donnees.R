@@ -23,6 +23,7 @@ communes<-readOGR(dsn=path.expand("../shapefile/communes2017"),layer="communes-2
 
 #Retrait de Mayotte de l'étude
 communes <- subset(communes,!(substr(communes@data$insee,1,3)=="976"))
+communes@data$insee<-as.character(communes@data$insee)
 
 #Vérification que le code insee est une cle de jointude (test de doublons)
 communes@data[which(as.character(communes@data$insee) %in% names(which(table(communes@data$insee)>1))),]
@@ -46,7 +47,12 @@ plot(communes[which((substr(communes@data$insee,1,2) == "74") & (as.character(co
 plot(communes[which(communes@data$insee == "74010")[2],],col=c("blue"),add=T)
 
 #Conclusion : on conserve le rouge et on supprime le bleu
-communes<-communes[-which(communes@data$insee == "74010")[2],]
+x<-rep(T,nrow(communes@data))
+x[which(communes@data$insee == "74010")[2]]<-F
+communes<-subset(communes,x)
+
+#Retrait des iles
+communes<-subset(communes, !(communes@data$insee %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")))
 
 #------------------------------------------------#
 #   Resultats second tour presidentielle 2017    #
@@ -100,6 +106,8 @@ pres2$insee = sapply(1:nrow(pres2),function(x){
   insee<-paste0(dep,com)
 })
 
+#Retrait des iles
+pres2<-pres2[!(pres2$insee %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
 
 
 #Etude pre-fusion avec le shapefile des communes
@@ -572,6 +580,7 @@ base_cc <- read.xlsx2("../data/base_cc_comparateur.xls",sheetIndex = 1,startRow=
 
 #Prise en compte des fusions de communes (ligne NA dans la base cc)
 base_cc <-base_cc[!is.na(base_cc$P15_POP),]
+base_cc$insee<-as.character(base_cc$CODGEO)
 
 #Retrait des villages français de la Meuse détruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 base_cc <- base_cc[!(base_cc$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
@@ -600,6 +609,7 @@ data_demo<-read.xls("../data/base-cc-evol-struct-pop-2015.xls",sheet = 1,skip=5)
 
 #Retrait des villages français de la Meuse détruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 data_demo <- data_demo[!(data_demo$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
+data_demo$insee <- as.character(data_demo$CODGEO)
 
 fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.character(communes@data$nom)),data.frame(insee=as.character(data_demo$CODGEO),LIBGEO=as.character(data_demo$LIBGEO)),by="insee",all=T)
 
