@@ -89,6 +89,27 @@ dev.off()
 nb<-poly2nb(communes)
 cont.w<-nb2listw(nb,style="W")
 
+comNA <- subset(communes,is.na(communes@data$MED15))
+com1 <- subset(communes,!is.na(communes@data$MED15))
+nb1<-poly2nb(com1)
+cont.w1<-nb2listw(nb1,style="W",zero.policy=T)
+mean(com1@data$MED15)
+
+com2<-communes
+
+NA_MED <- function(x){
+  com2@data[is.na(communes@data$MED15.y),]$MED15=rep(x)
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15)
+  return (var(com2@data$MED15-v_tx))
+}
+
+c<- as.vector(400*c(0:100))
+d<-lapply(c,FUN="NA_MED")
+plot(c,d)
+
+
+moran.test(com2@data$MED15.y, cont.w)
+
 
 ### Test de Moran, Données Brutes
 moran.test(communes@data$pct_macron_votants, cont.w)
