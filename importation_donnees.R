@@ -1,38 +1,41 @@
+options(java.parameters = "-Xmx8000m")
+
 library(rgdal)
 library(rgeos)
 library(xlsx)
 library(igraph)
 library(maptools)
 library(spdep)
-library(graph)
-library(gdata)
+
+
 
 
 
 # Objectifs :
-# - Importer les differents fichiers de données en objet R 
-# - Assurer la cohernce entre les differentes sources de données
+# - Importer les differents fichiers de donn?es en objet R 
+# - Assurer la cohernce entre les differentes sources de donn?es
 
-# Champs : Communes de France métropolitaine, Guadeloupe, Martinique, Guyane et Réunion
+# Champs : Communes de France m?tropolitaine, Guadeloupe, Martinique, Guyane et R?union
 
 #------------------------------------------------#
 #           Shapefile des communes               #
 #------------------------------------------------#
 
 communes<-readOGR(dsn=path.expand("../shapefile/communes2017"),layer="communes-20170112",use_iconv = TRUE, encoding = "UTF-8")
-
-#Retrait de Mayotte de l'étude
-communes <- subset(communes,!(substr(communes@data$insee,1,3)=="976"))
 communes@data$insee<-as.character(communes@data$insee)
 
-#Vérification que le code insee est une cle de jointude (test de doublons)
+
+#Retrait de Mayotte de l'Ã©tude
+communes <- subset(communes,!(substr(communes@data$insee,1,3)=="976"))
+
+#VÃ©rification que le code insee est une cle de jointude (test de doublons)
 communes@data[which(as.character(communes@data$insee) %in% names(which(table(communes@data$insee)>1))),]
 
 #Probleme avec les polygones pour la ville d'Annecy (74010)
 plot(communes[which(communes@data$insee == "74010"),],col=c("red","blue"))
 #Le polygone rouge est plus grandque le bleu et se se superposent
 
-#Identification du polygone à retenir en fonction des communes limitrophes
+#Identification du polygone ? retenir en fonction des communes limitrophes
 
 #Rouge
 plot(communes[which(communes@data$insee == "74010"),],lty=0,col="transparent")
@@ -51,8 +54,6 @@ x<-rep(T,nrow(communes@data))
 x[which(communes@data$insee == "74010")[2]]<-F
 communes<-subset(communes,x)
 
-#Retrait des iles
-communes<-subset(communes, !(communes@data$insee %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")))
 
 #------------------------------------------------#
 #   Resultats second tour presidentielle 2017    #
@@ -93,7 +94,7 @@ pres2$pct_nuls_votants<-as.numeric(as.character(pres2$pct_nuls_votants))
 pres2$pct_votants_inscrits<-as.numeric(as.character(pres2$pct_votants_inscrits))
 
 
-#Restriction de l'etude à la France metropolitaine, Guadeloupe, Martinique, Rénion et Guyane
+#Restriction de l'etude ? la France metropolitaine, Guadeloupe, Martinique, R?nion et Guyane
 pres2<-pres2[!(pres2$codedep %in% c("ZZ","ZS","ZP","ZW","ZX","ZN","ZM")),]
 
 
@@ -106,10 +107,6 @@ pres2$insee = sapply(1:nrow(pres2),function(x){
   insee<-paste0(dep,com)
 })
 
-#Retrait des iles
-pres2<-pres2[!(pres2$insee %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
-
-
 #Etude pre-fusion avec le shapefile des communes
 dfShape<-data.frame(insee=as.character(communes@data$insee),nom=as.character(communes@data$nom))
 fusion<-merge(dfShape,pres2[,c("insee","libcomm")],by="insee",all=T)
@@ -120,8 +117,8 @@ fusion[is.na(fusion$nom),c("insee","libcomm")]
 fusion[is.na(fusion$libcomm),c("insee","nom")]
 #Conclusion : Certaines communes sont dans le shapefile mais pas dans le fichier de resultats
 #2 problemes :
-#-Polygones pour Saint-Pierre et Miquelon qui a été retiré de l'étude (97501,97502)
-#-Polygones pour les villages français de la Meuse détruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
+#-Polygones pour Saint-Pierre et Miquelon qui a ?t? retir? de l'?tude (97501,97502)
+#-Polygones pour les villages fran?ais de la Meuse d?truits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 
 rm(dfShape)
 rm(fusion)
@@ -145,7 +142,7 @@ adj_table <- read.csv("../data/adj_comm.csv",header=T,encoding="UTF-8")
 
 length(adj_table$insee)==length(unique(adj_table$insee)) #Pas de doublons de lignes
 
-#Filtrage des donnees aux communes en France metropolitaine, Guadeloupe, Martinique, Guyane, Réunion (ensemble C)
+#Filtrage des donnees aux communes en France metropolitaine, Guadeloupe, Martinique, Guyane, R?union (ensemble C)
 adj_table<-adj_table[which(substr(as.character(adj_table$insee),1,2)!="98"),]
 adj_table<-adj_table[which(substr(as.character(adj_table$insee),1,3)!="976"),]
 
@@ -193,9 +190,9 @@ fusion[which(is.na(fusion$nom)),c("insee","nomCom")]
 # 05088 Montmorin commune en mai 2017 mais fusion en 05024 Valdoule en juillet 2017
 # 05150 Sainte-Marie commune en mai 2017 mais fusion en 05024 Valdoule en juillet 2017
 
-# Il faut degrouper la nouvelle de commune de Vadoule 05024 en communes anciennes présentes en mai 2017
+# Il faut degrouper la nouvelle de commune de Vadoule 05024 en communes anciennes pr?sentes en mai 2017
 # 05024 Vadoule est la fusion de 05024 Bruis, 05088 Montmorin et 05150 Sainte-Marie 
-# On regarde les communes adjacentes à Bruis (rouge), Montmorin (vert) et Sainte-Marie (bleu)
+# On regarde les communes adjacentes ? Bruis (rouge), Montmorin (vert) et Sainte-Marie (bleu)
 
 ValdouleEtVoisins <- subset(communes, (substr(communes@data$insee,1,2) == "05") | (substr(communes@data$insee,1,2) == "26"))
 par(mar=c(5, 4, 4, 2) + 0.1)
@@ -239,9 +236,9 @@ plot(dep_16_17[dep_16_17@data$insee == "16312",],col=c("green"),add=T)
 plot(dep_16_17[dep_16_17@data$insee == "16395",],col=c("blue"),add=T)
 pointLabel(coordinates(dep_16_17), labels = dep_16_17$insee, col= "black", cex = 0.6)
 
-# Rouillac (rouge), Saint-Cybardeaux (vert) et Vaux-Rouillac (bleu) étaient bien des communes en mai 2017. Le problème ne vient pas de la fusion de communes.
+# Rouillac (rouge), Saint-Cybardeaux (vert) et Vaux-Rouillac (bleu) ?taient bien des communes en mai 2017. Le probl?me ne vient pas de la fusion de communes.
 
-# Liste des voisins à partir du rendu du shapefile 'communes'
+# Liste des voisins ? partir du rendu du shapefile 'communes'
 # 16286 Rouillac - Voisins : 16208, 17261, 16017, 16228, 16156, 16312, 16395, 16369
 # 16312 Saint-Cybardeaux - Voisins : 16286, 16156, 16148, 16320,16298, 16123, 16395
 # 16395 Vaux-Rouillac - Voisins : 16369, 16286, 16312, 16123, 16139, 16145
@@ -267,7 +264,7 @@ tracerVoisins <- function(num_insee){
   plot(dep_16_17[dep_16_17$insee %in%   strsplit(as.character(adj_table[which(adj_table$insee == num_insee),"insee_voisins"]),split="[|]")[[1]],],col=c("yellow"),add=T)
   nbDess<- sum(dep_16_17$insee %in%   strsplit(as.character(adj_table[which(adj_table$insee == num_insee),"insee_voisins"]),split="[|]")[[1]])
   nbFichier <- length(strsplit(as.character(adj_table[which(adj_table$insee == num_insee),"insee_voisins"]),split="[|]")[[1]])
-  title(main=paste0(num_insee," - ",as.character(dep_16_17@data[dep_16_17@data$insee==num_insee,"nom"])),sub=paste0(nbDess," communes voisines coloriées et ",nbFichier, " communes adjacentes dans le fichier"))
+  title(main=paste0(num_insee," - ",as.character(dep_16_17@data[dep_16_17@data$insee==num_insee,"nom"])),sub=paste0(nbDess," communes voisines colori?es et ",nbFichier, " communes adjacentes dans le fichier"))
 }
 
 sapply(voisins,FUN="tracerVoisins")
@@ -300,7 +297,7 @@ g_commune<-add.edges(g_commune,c("16286","16208",
 
 
 #Probleme 3
-# 51105 Cernay-lès-Reims
+# 51105 Cernay-l?s-Reims
 # 51454 Reims
 
 dep_51<- subset(communes, substr(communes@data$insee,1,2) == "51")
@@ -310,10 +307,10 @@ plot(dep_51[dep_51@data$insee == "51105",],col=c("red"),add=T)
 plot(dep_51[dep_51@data$insee == "51454",],col=c("green"),add=T)
 pointLabel(coordinates(dep_51), method="GA",labels = dep_51$insee, col= "black", cex = 0.6)
 
-# Cernay-lès-Reims (rouge) et Reims (vert) étaient bien des communes en mai 2017. Le problème ne vient pas de la fusion de communes.
+# Cernay-l?s-Reims (rouge) et Reims (vert) ?taient bien des communes en mai 2017. Le probl?me ne vient pas de la fusion de communes.
 
-# Liste des voisins à partir du rendu du shapefile 'communes'
-# 51105 Cernay-lès-Reims - Voisins : 51454, 51662, 51052, 51403, 51450
+# Liste des voisins ? partir du rendu du shapefile 'communes'
+# 51105 Cernay-l?s-Reims - Voisins : 51454, 51662, 51052, 51403, 51450
 # 51454 Reims - Voisins : 51573, 51474, 51518, 51183, 51055, 51662, 51105, 51450, 51493, 51562, 51172, 51584, 51115, 51631, 51058
 
 # Verification des voisins dans le fichier d'adjacence pour les communes voisines de Rouillac, Saint-Cybardeaux et Vaux-Rouillac
@@ -335,7 +332,7 @@ tracerVoisins <- function(num_insee){
   plot(dep_51[dep_51$insee %in%   strsplit(as.character(adj_table[which(adj_table$insee == num_insee),"insee_voisins"]),split="[|]")[[1]],],col=c("yellow"),add=T)
   nbDess<- sum(dep_51$insee %in%   strsplit(as.character(adj_table[which(adj_table$insee == num_insee),"insee_voisins"]),split="[|]")[[1]])
   nbFichier <- length(strsplit(as.character(adj_table[which(adj_table$insee == num_insee),"insee_voisins"]),split="[|]")[[1]])
-  title(main=paste0(num_insee," - ",as.character(dep_51@data[dep_51@data$insee==num_insee,"nom"])),sub=paste0(nbDess," communes voisines coloriées et ",nbFichier, " communes adjacentes dans le fichier"))
+  title(main=paste0(num_insee," - ",as.character(dep_51@data[dep_51@data$insee==num_insee,"nom"])),sub=paste0(nbDess," communes voisines colori?es et ",nbFichier, " communes adjacentes dans le fichier"))
 }
 
 sapply(voisins,FUN="tracerVoisins")
@@ -343,7 +340,7 @@ sapply(voisins,FUN="tracerVoisins")
 rm(voisins)
 rm(dep_51)
 
-# Conclusion : Probable omission des polygones pour Cernay-lès-Reims et Reims dans le calcul des communes adjacentes avec OpenStreetMap
+# Conclusion : Probable omission des polygones pour Cernay-l?s-Reims et Reims dans le calcul des communes adjacentes avec OpenStreetMap
 # Il faut rajouter manuellement les connexions pour ces 2 communes
 
 g_commune<- add_vertices(g_commune,nv=2,name=c("51105","51454"))
@@ -371,10 +368,10 @@ g_commune<-add.edges(g_commune,c("51105","51454",
 #Probleme 4
 # Les iles
 # 17004   Ile-d'Aix
-# 22016   Ile-de-Bréhat
+# 22016   Ile-de-Br?hat
 # 29082   Ile-de-Batz
 # 29083   Ile-de-Sein
-# 29084   Ile-Molène
+# 29084   Ile-Mol?ne
 # 29155   Ouessant
 # 56069   Groix
 # 56085   Hoedic
@@ -382,12 +379,14 @@ g_commune<-add.edges(g_commune,c("51105","51454",
 # 56087   Ile-aux-Moines
 # 56088   Ile-d'Arz
 # 85113   L'Ile-d'Yeu
-# 97110   La Désirade
+# 97110   La D?sirade
 # 97130   Terre-de-Bas
 # 97131   Terre-de-Haut
-# Il faut rajouter les îles qui ne sont adjacentes à aucune autre commune
+# Il faut rajouter les ?les qui ne sont adjacentes ? aucune autre commune
 
-g_commune<-add_vertices(g_commune,nv=15,name=c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131"))
+#Retrait des iles
+communes<-subset(communes, !(communes@data$insee %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")))
+pres2<-pres2[!(pres2$insee %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
 
 #Communes dans le fichier des communes adjacentes mais pas dans l'ensemble C
 fusion[which(is.na(fusion$nomCom)),c("insee","nom")]
@@ -395,13 +394,13 @@ fusion[which(is.na(fusion$nomCom)),c("insee","nom")]
 # Probleme 5
 # 55039     Beaumont-en-Verdunois
 # 55050     Bezonvaux
-# 55139     Cumières-le-Mort-Homme
+# 55139     Cumi?res-le-Mort-Homme
 # 55189     Fleury-devant-Douaumont
-# 55239     Haumont-près-Samogneux
-# 55307     Louvemont-Côte-du-Poivre
+# 55239     Haumont-pr?s-Samogneux
+# 55307     Louvemont-C?te-du-Poivre
 
-# Polygones pour les villages français de la Meuse détruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
-# Ceux-ci sont retiré de l'étude car il n'y a pas d'habitant
+# Polygones pour les villages fran?ais de la Meuse d?truits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
+# Ceux-ci sont retir? de l'?tude car il n'y a pas d'habitant
 # On supprime les connexions qui impliquent ces communes
 
 g_commune<-delete.vertices(g_commune,c("55039","55050","55139","55189","55239","55307"))
@@ -411,10 +410,10 @@ rm(adj_table)
 rm(dfCommune)
 rm(dfAdj)
 
-# Confrontation du graphe construit à partir du fichier des communes adjacente et du graphe construit à partir du shapefile des communes en appliquant la fonction poly2nb
+# Confrontation du graphe construit ? partir du fichier des communes adjacente et du graphe construit ? partir du shapefile des communes en appliquant la fonction poly2nb
 carteCommune.nb <-poly2nb(communes)
 
-#Construction de l'objet nb à partir du graphe g_commune
+#Construction de l'objet nb ? partir du graphe g_commune
 communes.nb <-sapply(as.character(communes@data$insee),function(x){
   voisins<-neighbors(g_commune,x,mode="all")
   if(length(voisins)==0){
@@ -467,35 +466,35 @@ sapply(1:nrow(arete_communes_moins_adj),function(x){
 })
 
 # Parti pris
-# OUI : 62826 - Le Touquet-Paris-Plage <-> 62318 - Étaples
+# OUI : 62826 - Le Touquet-Paris-Plage <-> 62318 - ?taples
 # NON : 80721 - Saint-Valery-sur-Somme <-> 80600 - Noyelles-sur-Mer
 # NON : 80649 - Quend <-> 62866 - Waben
 # NON : 47145 - Layrac <-> 47128 - Lafox
-# NON : 34134 - Lavérune <-> 34172 - Montpellier
+# NON : 34134 - Lav?rune <-> 34172 - Montpellier
 # OUI : 89265 - Montigny-la-Resle <-> 89307 - Pontigny
 # NON : 89437 - Venouse <-> 89226 - Lignorelles
 # NON : 33182 - Gauriac <-> 33517 - Soussans
 # NON : 33182 - Gauriac <-> 33268 - Margaux-Cantenac
 # OUI : 33389 - Saint-Ciers-sur-Gironde <-> 17405 - Saint-Sorlin-De-Conac
 # NON : 33551 - Villeneuve <->  33517 - Soussans
-# NON : 65424 - Sers <-> 65145 - Chèze
+# NON : 65424 - Sers <-> 65145 - Ch?ze
 # NON : 33073 - Braud-et-Saint-Louis <-> 33370 - Saint-Androny
 # NON : 33325 - Plassac <-> 33220 - Lamarque
 # NON : 33325 - Plassac <-> 33010 - Arcins
 # NON : 33325 - Plassac <-> 33517 - Soussans
-# NON : 33405 - Saint-Genès-de-Blaye <-> 33370 - Saint-Androny
-# NON : 33405 - Saint-Genès-de-Blaye <-> 33423 - Saint-Julien-Beycheville
-# NON : 33405 - Saint-Genès-de-Blaye <-> 33146 - Cussac-Fort-Médoc
-# OUI : 62318 - Étaples <-> 62261 - Cucq
-# OUI : 62318 - Étaples <-> 62752 - Saint-Josse
-# OUI : 39209 - Val-d'Épy <-> 39036 - La Balme d'Épy
-# NON : 17148 - Écurat <-> 17154 - Les Essards
+# NON : 33405 - Saint-Gen?s-de-Blaye <-> 33370 - Saint-Androny
+# NON : 33405 - Saint-Gen?s-de-Blaye <-> 33423 - Saint-Julien-Beycheville
+# NON : 33405 - Saint-Gen?s-de-Blaye <-> 33146 - Cussac-Fort-M?doc
+# OUI : 62318 - ?taples <-> 62261 - Cucq
+# OUI : 62318 - ?taples <-> 62752 - Saint-Josse
+# OUI : 39209 - Val-d'?py <-> 39036 - La Balme d'?py
+# NON : 17148 - ?curat <-> 17154 - Les Essards
 # NON : 33268 - Margaux-Cantenac <-> 33035 - Bayon-sur-Gironde
 # NON : 33314 - Pauillac <-> 33370 - Saint-Androny
-# NON : 33146 - Cussac-Fort-Médoc <-> 33058 - Blaye
+# NON : 33146 - Cussac-Fort-M?doc <-> 33058 - Blaye
 # NON : 33423 - Saint-Julien-Beycheville <-> 33370 - Saint-Androny
 # NON : 33423 - Saint-Julien-Beycheville <-> 33058 - Blaye
-# OUI : 62176 - Bréxent-Énocq <-> 62752 - Saint-Josse
+# OUI : 62176 - Br?xent-?nocq <-> 62752 - Saint-Josse
 # NON : 62832 - Tubersent <-> 62752 - Saint-Josse
 # NON : 33220 - Lamarque <-> 33058 - Blaye
 
@@ -577,15 +576,12 @@ rm(corrections)
 
 #Importation de la table
 base_cc <- read.xlsx2("../data/base_cc_comparateur.xls",sheetIndex = 1,startRow=6,header=T)
-
-#Prise en compte des fusions de communes (ligne NA dans la base cc)
-base_cc <-base_cc[!is.na(base_cc$P15_POP),]
 base_cc$insee<-as.character(base_cc$CODGEO)
 
-#Retrait des villages français de la Meuse détruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
+#Retrait des villages fran?ais de la Meuse d?truits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 base_cc <- base_cc[!(base_cc$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
 
-#Retrait des îles
+#Retrait des ?les
 base_cc <- base_cc[!(base_cc$CODGEO %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
 
 
@@ -593,9 +589,11 @@ base_cc <- base_cc[!(base_cc$CODGEO %in% c("17004","22016","29082","29083","2908
 for(i in 5:ncol(base_cc)){
   base_cc[,i]<-as.numeric(as.character(base_cc[,i]))
 }
+base_cc<-base_cc[!is.na(base_cc$P15_POP),]
 
 #Tests ensemblistes
 fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.character(communes@data$nom)),data.frame(insee=as.character(base_cc$CODGEO),LIBGEO=as.character(base_cc$LIBGEO)),by="insee",all=T)
+
 
 fusion[is.na(fusion$nom),c("insee","LIBGEO")]
 fusion[is.na(fusion$LIBGEO),c("insee","nom")]
@@ -608,12 +606,15 @@ rm(fusion)
 #               Base demographique               #
 #------------------------------------------------#
 
-data_demo<-read.xls("../data/base-cc-evol-struct-pop-2015.xls",sheet = 1,skip=5)
+data_demo<-read.xlsx2("../data/base-cc-evol-struct-pop-2015.xls",sheetIndex = 1,startRow=6,header=T)
 
-#Retrait des villages français de la Meuse détruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
+#Retrait des villages fran?ais de la Meuse d?truits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 data_demo <- data_demo[!(data_demo$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
 
-#Retrait des îles
+
+
+
+#Retrait des ?les
 data_demo <- data_demo[!(data_demo$CODGEO %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
 
 data_demo$insee <- as.character(data_demo$CODGEO)
@@ -631,11 +632,11 @@ rm(fusion)
 #                       FUSION                         #
 #------------------------------------------------------#
 
-communes <- merge(communes,base_cc,by="insee")
-communes <- merge(communes,data_demo,by="insee")
-communes <- merge(communes,pres2,by="insee")
-communes <- communes@data[,c("insee","nom","P15_POP.x","MED15","P15_CHOM1564","P15_ACT1564","P15_POP0014","P15_POP1529","P15_POP3044","P15_POP4559","P15_POP6074","P15_POP7589","P15_POP90P","C15_POP15P","C15_POP15P_CS1","C15_POP15P_CS2","C15_POP15P_CS3","C15_POP15P_CS4","C15_POP15P_CS5","C15_POP15P_CS6","C15_POP15P_CS7","C15_POP15P_CS8","C15_F15P","pct_macron_votants")]
-communes <- communes@data$P15_POP.x
+communes <- merge(communes,base_cc,by="insee",sort=F)
+communes <- merge(communes,data_demo,by="insee",sort=F)
+communes <- merge(communes,pres2,by="insee",sort=F)
+communes <- communes@data[,c("insee","nom","P15_POP.x","MED15","P15_CHOM1564","P15_ACT1564","P15_POP0014.x","P15_POP1529.x","P15_POP3044.x","P15_POP4559.x","P15_POP6074.x","P15_POP7589.x","P15_POP90P.x","C15_POP15P.y","C15_POP15P_CS1.y","C15_POP15P_CS2.y","C15_POP15P_CS3.y","C15_POP15P_CS4.y","C15_POP15P_CS5.y","C15_POP15P_CS6.y","C15_POP15P_CS7.y","C15_POP15P_CS8.y","C15_F15P.x","pct_macron_votants.y")]
+
 
 
 communes@data$TCHOM_15 <- communes@data$P15_CHOM1564/communes@data$P15_ACT1564
