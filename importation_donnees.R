@@ -569,6 +569,8 @@ rm(arete_communes_moins_adj)
 rm(communes.nb)
 rm(corrections)
 
+cont.w<-nb2listw(carteCommune.nb,style="W")
+
 #------------------------------------------------#
 #        Base comparateur de territoire          #
 #------------------------------------------------#
