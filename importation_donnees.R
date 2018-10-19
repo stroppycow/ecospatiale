@@ -7,10 +7,6 @@ library(igraph)
 library(maptools)
 library(spdep)
 
-
-
-
-
 # Objectifs :
 # - Importer les differents fichiers de donnees en objet R 
 # - Assurer la cohernce entre les differentes sources de donn?es
@@ -116,14 +112,21 @@ fusion[is.na(fusion$nom),c("insee","libcomm")]
 fusion[is.na(fusion$libcomm),c("insee","nom")]
 #Conclusion : Certaines communes sont dans le shapefile mais pas dans le fichier de resultats
 #2 problemes :
-#-Polygones pour Saint-Pierre et Miquelon qui a ?t? retir? de l'?tude (97501,97502)
-#-Polygones pour les villages fran?ais de la Meuse d?truits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
+#-Polygones pour Saint-Pierre et Miquelon qui a ete retire de l'etude (97501,97502)
+#-Polygones pour les villages francais de la Meuse detruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 
 rm(dfShape)
 rm(fusion)
 
 #Retrait de ces polygones
 communes <- subset(communes,!(communes@data$insee %in% c("55039","55050","55139","55189","55239","55307","97501","97502")))
+
+pres2[pres2$pct_macron_votants==0,c("insee","libcomm","n_lepen")]
+#Probleme en cas de modele en log
+
+#Retrait communes dont le vote a ete annule par le conseil constitutionnel (Maconcourt,Guinecourt,Fontaines,Vaudreville,Savenay,Asquins,La Chapelle-sur-Usson,Vendoeuvres,Lagamas,Canteleux,Wallon-Cappel,Sainte-Foy,Montbel,Millas) + 2 communes ayant vote uniquement pour Marine Le Pen (Ornes, They-sous-Vaudemont)
+communes <- subset(communes,!(communes@data$insee %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173")))
+pres2<- pres2[pres2$insee %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173"),]
 
 #------------------------------------------------#
 #           Shapefile europe                     #
@@ -141,9 +144,9 @@ adj_table <- read.csv("../data/adj_comm.csv",header=T,encoding="UTF-8")
 
 length(adj_table$insee)==length(unique(adj_table$insee)) #Pas de doublons de lignes
 
-#Filtrage des donnees aux communes en France metropolitaine, Guadeloupe, Martinique, Guyane, R?union (ensemble C)
+#Filtrage des donnees aux communes en France metropolitaine
 adj_table<-adj_table[which(substr(as.character(adj_table$insee),1,2)!="98"),]
-adj_table<-adj_table[which(substr(as.character(adj_table$insee),1,3)!="976"),]
+adj_table<-adj_table[which(substr(as.character(adj_table$insee),1,2)!="97"),]
 
 
 #Construction d'un graphe de communes
@@ -367,10 +370,10 @@ g_commune<-add.edges(g_commune,c("51105","51454",
 #Probleme 4
 # Les iles
 # 17004   Ile-d'Aix
-# 22016   Ile-de-Br?hat
+# 22016   Ile-de-Brehat
 # 29082   Ile-de-Batz
 # 29083   Ile-de-Sein
-# 29084   Ile-Mol?ne
+# 29084   Ile-Molene
 # 29155   Ouessant
 # 56069   Groix
 # 56085   Hoedic
@@ -378,10 +381,10 @@ g_commune<-add.edges(g_commune,c("51105","51454",
 # 56087   Ile-aux-Moines
 # 56088   Ile-d'Arz
 # 85113   L'Ile-d'Yeu
-# 97110   La D?sirade
+# 97110   La Desirade
 # 97130   Terre-de-Bas
 # 97131   Terre-de-Haut
-# Il faut rajouter les ?les qui ne sont adjacentes ? aucune autre commune
+# Il faut supprimer les iles qui ne sont adjacentes a aucune autre commune
 
 #Retrait des iles
 communes<-subset(communes, !(communes@data$insee %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")))
@@ -393,10 +396,10 @@ fusion[which(is.na(fusion$nomCom)),c("insee","nom")]
 # Probleme 5
 # 55039     Beaumont-en-Verdunois
 # 55050     Bezonvaux
-# 55139     Cumi?res-le-Mort-Homme
+# 55139     Cumieres-le-Mort-Homme
 # 55189     Fleury-devant-Douaumont
-# 55239     Haumont-pr?s-Samogneux
-# 55307     Louvemont-C?te-du-Poivre
+# 55239     Haumont-pres-Samogneux
+# 55307     Louvemont-Cote-du-Poivre
 
 # Polygones pour les villages fran?ais de la Meuse d?truits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 # Ceux-ci sont retir? de l'?tude car il n'y a pas d'habitant
@@ -409,7 +412,7 @@ rm(adj_table)
 rm(dfCommune)
 rm(dfAdj)
 
-# Confrontation du graphe construit ? partir du fichier des communes adjacente et du graphe construit ? partir du shapefile des communes en appliquant la fonction poly2nb
+# Confrontation du graphe construit a partir du fichier des communes adjacente et du graphe construit ? partir du shapefile des communes en appliquant la fonction poly2nb
 carteCommune.nb <-poly2nb(communes)
 
 #Construction de l'objet nb ? partir du graphe g_commune
@@ -483,9 +486,9 @@ sapply(1:nrow(arete_communes_moins_adj),function(x){
 # NON : 33325 - Plassac <-> 33517 - Soussans
 # NON : 33405 - Saint-Gen?s-de-Blaye <-> 33370 - Saint-Androny
 # NON : 33405 - Saint-Gen?s-de-Blaye <-> 33423 - Saint-Julien-Beycheville
-# NON : 33405 - Saint-Gen?s-de-Blaye <-> 33146 - Cussac-Fort-M?doc
-# OUI : 62318 - ?taples <-> 62261 - Cucq
-# OUI : 62318 - ?taples <-> 62752 - Saint-Josse
+# NON : 33405 - Saint-Gen?s-de-Blaye <-> 33146 - Cussac-Fort-Medoc
+# OUI : 62318 - Etaples <-> 62261 - Cucq
+# OUI : 62318 - Etaples <-> 62752 - Saint-Josse
 # OUI : 39209 - Val-d'?py <-> 39036 - La Balme d'?py
 # NON : 17148 - ?curat <-> 17154 - Les Essards
 # NON : 33268 - Margaux-Cantenac <-> 33035 - Bayon-sur-Gironde
@@ -493,7 +496,7 @@ sapply(1:nrow(arete_communes_moins_adj),function(x){
 # NON : 33146 - Cussac-Fort-M?doc <-> 33058 - Blaye
 # NON : 33423 - Saint-Julien-Beycheville <-> 33370 - Saint-Androny
 # NON : 33423 - Saint-Julien-Beycheville <-> 33058 - Blaye
-# OUI : 62176 - Br?xent-?nocq <-> 62752 - Saint-Josse
+# OUI : 62176 - Brexent-?nocq <-> 62752 - Saint-Josse
 # NON : 62832 - Tubersent <-> 62752 - Saint-Josse
 # NON : 33220 - Lamarque <-> 33058 - Blaye
 
@@ -569,6 +572,9 @@ rm(arete_communes_moins_adj)
 rm(communes.nb)
 rm(corrections)
 
+cont.w<-nb2listw(carteCommune.nb,style="W")
+
+
 #------------------------------------------------#
 #        Base comparateur de territoire          #
 #------------------------------------------------#
@@ -576,11 +582,14 @@ rm(corrections)
 #Importation de la table
 base_cc <- read.xlsx2("../data/base_cc_comparateur.xls",sheetIndex = 1,startRow=6,header=T)
 
-#Retrait des villages fran?ais de la Meuse d?truits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
+#Retrait des villages francais de la Meuse detruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 base_cc <- base_cc[!(base_cc$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
 
-#Retrait des ?les
+#Retrait des iles
 base_cc <- base_cc[!(base_cc$CODGEO %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
+
+#Retrait communes dont le vote a ete annule par le conseil constitutionnel (Maconcourt,Guinecourt,Fontaines,Vaudreville,Savenay,Asquins,La Chapelle-sur-Usson,Vendoeuvres,Lagamas,Canteleux,Wallon-Cappel,Sainte-Foy,Montbel,Millas) + 2 communes ayant vote uniquement pour Marine Le Pen (Ornes, They-sous-Vaudemont)
+base_cc<- base_cc[base_cc$insee %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173"),]
 
 
 #Modification des types des variables base_cc$LIBGEO<-as.character(base_cc$LIBGEO)
@@ -614,6 +623,9 @@ data_demo <- data_demo[!(data_demo$CODGEO %in% c("55039","55050","55139","55189"
 
 #Retrait des iles
 data_demo <- data_demo[!(data_demo$CODGEO %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
+
+#Retrait communes dont le vote a ete annule par le conseil constitutionnel (Maconcourt,Guinecourt,Fontaines,Vaudreville,Savenay,Asquins,La Chapelle-sur-Usson,Vendoeuvres,Lagamas,Canteleux,Wallon-Cappel,Sainte-Foy,Montbel,Millas) + 2 communes ayant vote uniquement pour Marine Le Pen (Ornes, They-sous-Vaudemont)
+data_demo<- data_demo[data_demo$insee %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173"),]
 
 
 for(i in 5:ncol(data_demo)){
@@ -662,4 +674,8 @@ communes@data$C15_PROP15P_CS6<-communes@data$C15_POP15P_CS6/communes@data$C15_PO
 communes@data$C15_PROP15P_CS7<-communes@data$C15_POP15P_CS7/communes@data$C15_POP15P*100
 communes@data$C15_PROP15P_CS8<-communes@data$C15_POP15P_CS8/communes@data$C15_POP15P*100
 
-save(communes,carteCommune.nb,europe,file="../data/donnees_projet.RData")
+rm(pres2)
+rm(data_demo)
+rm(base_cc)
+
+save(communes,carteCommune.nb,europe,cont.w,file="../data/donnees_projet.RData")
