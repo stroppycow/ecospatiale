@@ -86,10 +86,10 @@ box(which = "plot", lty = "solid")
 legend.col(col = couleurAbs, lev = 0:99)
 dev.off()
 
-nb<-poly2nb(communes)
-cont.w<-nb2listw(nb,style="W")
+cont.w<-nb2listw(carteCommune.nb,style="W")
 
-comNA <- subset(communes,is.na(communes@data$MED15))
+
+
 com1 <- subset(communes,!is.na(communes@data$MED15))
 nb1<-poly2nb(com1)
 cont.w1<-nb2listw(nb1,style="W",zero.policy=T)
@@ -98,15 +98,36 @@ mean(com1@data$MED15)
 com2<-communes
 
 NA_MED <- function(x){
-  com2@data[is.na(communes@data$MED15.y),]$MED15=rep(x)
-  v_tx_MED<-lag.listw(cont.w,com2@data$MED15)
-  return (var(com2@data$MED15-v_tx))
+  com2@data[is.na(communes@data$MED15.y),]$MED15.y=rep(x)
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
+  a <- (com2@data$MED15.y-v_tx_MED)[is.na(communes@data$MED15.y)]
+  return (var(a))
 }
 
-c<- as.vector(400*c(0:100))
+c<- as.vector(20*c(0:100)+19000)
 d<-lapply(c,FUN="NA_MED")
 plot(c,d)
 
+Comp_lag <- function(x){
+  com2@data[is.na(communes@data$MED15.y),]$MED15.y=rep(x)
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
+  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
+  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
+  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
+  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
+  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
+  v_tx_MED2<-lag.listw(cont.w,com2@data$MED15.y)
+  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED2[is.na(communes@data$MED15.y)]
+  return (var((v_tx_MED-v_tx_MED2)[as.numeric(communes@data$DEP.y)<97]))
+  }
+
+
+
+com1 <- subset(communes,Comp_lag(0)==0)
 
 moran.test(com2@data$MED15.y, cont.w)
 
