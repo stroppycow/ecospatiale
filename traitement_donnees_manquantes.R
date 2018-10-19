@@ -6,9 +6,9 @@ com2<-communes
 
 #On trouve la valeur initiale d'imputation qui minimise la variance
 NA_MED <- function(x){
-  com2@data[is.na(communes@data$MED15.y),]$MED15.y=rep(x)
-  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
-  a <- (com2@data$MED15.y-v_tx_MED)[is.na(communes@data$MED15.y)]
+  com2@data[is.na(communes@data$MED15),]$MED15=rep(x)
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15)
+  a <- (com2@data$MED15-v_tx_MED)[is.na(communes@data$MED15)]
   return (var(a))
 }
 c<- as.vector(1*c(0:100)+19800)
@@ -17,30 +17,32 @@ plot(c,d) #19860
 
 #On inpute la valeur itérativement à partir des communes voisines
 Comp_lag <- function(x){
-  com2@data[is.na(communes@data$MED15.y),]$MED15.y=rep(x)
-  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
-  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
-  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
-  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
-  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
-  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
-  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
-  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
-  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
-  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
-  v_tx_MED<-lag.listw(cont.w,com2@data$MED15.y)
-  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED[is.na(communes@data$MED15.y)]
-  v_tx_MED2<-lag.listw(cont.w,com2@data$MED15.y)
-  com2@data[is.na(communes@data$MED15.y),]$MED15.y=v_tx_MED2[is.na(communes@data$MED15.y)]
-  return ((com2@data[as.numeric(com2@data$DEP.y)<97,]))
+  com2@data[is.na(communes@data$MED15),]$MED15=rep(x)
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15)
+  com2@data[is.na(communes@data$MED15),]$MED15=v_tx_MED[is.na(communes@data$MED15)]
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15)
+  com2@data[is.na(communes@data$MED15),]$MED15=v_tx_MED[is.na(communes@data$MED15)]
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15)
+  com2@data[is.na(communes@data$MED15),]$MED15=v_tx_MED[is.na(communes@data$MED15)]
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15)
+  com2@data[is.na(communes@data$MED15),]$MED15=v_tx_MED[is.na(communes@data$MED15)]
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15)
+  com2@data[is.na(communes@data$MED15),]$MED15=v_tx_MED[is.na(communes@data$MED15)]
+  v_tx_MED<-lag.listw(cont.w,com2@data$MED15)
+  com2@data[is.na(communes@data$MED15),]$MED15=v_tx_MED[is.na(communes@data$MED15)]
+  v_tx_MED2<-lag.listw(cont.w,com2@data$MED15)
+  com2@data[is.na(communes@data$MED15),]$MED15=v_tx_MED2[is.na(communes@data$MED15)]
+  return (com2@data)
 }
 
 #Visualisation des Ilots
 Ilots <- function(x){
-  com2@data[is.na(communes@data$MED15.y),]$MED15.y=rep(x)
-  v_tx_MED1<-lag.listw(cont.w,com2@data$MED15.y)
-  return (Comp_lag(x)[as.numeric(com2@data$DEP.y)<97 & v_tx_MED1==x,c("insee","MED15.y")])
+  com2@data[is.na(communes@data$MED15),]$MED15=rep(x)
+  v_tx_MED1<-lag.listw(cont.w,com2@data$MED15)
+  return (Comp_lag(x)[v_tx_MED1==x,c("insee","MED15")])
 }
 
-mean(com2@data$MED15.y[!is.na(communes@data$MED15.y)])
-moran.test(Comp_lag(19860)$MED15.y, cont.w)
+mean(com2@data$MED15[!is.na(communes@data$MED15)])
+moran.test(Comp_lag(19860)$MED15, cont.w)
+
+com2@data=Comp_lag(19860)

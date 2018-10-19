@@ -574,7 +574,6 @@ rm(corrections)
 
 cont.w<-nb2listw(carteCommune.nb,style="W")
 
-
 #------------------------------------------------#
 #        Base comparateur de territoire          #
 #------------------------------------------------#
