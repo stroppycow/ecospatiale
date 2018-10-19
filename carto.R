@@ -86,8 +86,7 @@ box(which = "plot", lty = "solid")
 legend.col(col = couleurAbs, lev = 0:99)
 dev.off()
 
-nb<-poly2nb(communes)
-cont.w<-nb2listw(nb,style="W")
+cont.w<-nb2listw(carteCommune.nb,style="W")
 
 comNA <- subset(communes,is.na(communes@data$MED15))
 com1 <- subset(communes,!is.na(communes@data$MED15))
@@ -131,11 +130,10 @@ communes@data$hs<-communes@data$hs
 x1<-bbox(communes)[1,1]
 x2<-bbox(communes)[1,2]
 communes@data$Colors <- as.character(vPal4[as.numeric(communes@data$hs)])
-metro<-subset(communes,substr(as.character(communes@data$insee),1,2)!="97")
 
 pdf("../sorties/auto2.pdf",width=7,height=7.5)
 par(mar=c(0.1,0.1,4,3))
-plot(metro, col=metro@data$Colors,lty=0)
+plot(communes, col=communes@data$Colors,lty=0)
 legend("topright",
       legend = c('BB','BH','HB','HH'),       
       bty = "n",

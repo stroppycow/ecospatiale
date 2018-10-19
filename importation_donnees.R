@@ -12,10 +12,10 @@ library(spdep)
 
 
 # Objectifs :
-# - Importer les differents fichiers de donn?es en objet R 
+# - Importer les differents fichiers de donnees en objet R 
 # - Assurer la cohernce entre les differentes sources de donn?es
 
-# Champs : Communes de France m?tropolitaine, Guadeloupe, Martinique, Guyane et R?union
+# Champs : Communes de France metropolitaine
 
 #------------------------------------------------#
 #           Shapefile des communes               #
@@ -25,8 +25,8 @@ communes<-readOGR(dsn=path.expand("../shapefile/communes2017"),layer="communes-2
 communes@data$insee<-as.character(communes@data$insee)
 
 
-#Retrait de Mayotte de l'étude
-communes <- subset(communes,!(substr(communes@data$insee,1,3)=="976"))
+#Retrait de l'outre-mer
+communes <- subset(communes,!(substr(communes@data$insee,1,2)=="97"))
 
 #Vérification que le code insee est une cle de jointude (test de doublons)
 communes@data[which(as.character(communes@data$insee) %in% names(which(table(communes@data$insee)>1))),]
@@ -94,14 +94,13 @@ pres2$pct_nuls_votants<-as.numeric(as.character(pres2$pct_nuls_votants))
 pres2$pct_votants_inscrits<-as.numeric(as.character(pres2$pct_votants_inscrits))
 
 
-#Restriction de l'etude ? la France metropolitaine, Guadeloupe, Martinique, R?nion et Guyane
-pres2<-pres2[!(pres2$codedep %in% c("ZZ","ZS","ZP","ZW","ZX","ZN","ZM")),]
+#Restriction de l'etude ? la France metropolitaine
+pres2<-pres2[!(pres2$codedep %in% c("ZZ","ZS","ZP","ZW","ZX","ZN","ZM","ZA","ZB","ZC","ZD")),]
 
 
 pres2$insee = sapply(1:nrow(pres2),function(x){
   dep<-as.character(pres2[x,"codedep"])
   dep<-ifelse(nchar(dep)==2,dep,paste0("0",dep))
-  dep<-ifelse(dep %in% c("ZA","ZB","ZC","ZD"),"97",dep)
   com<-as.character(pres2[x,"codecomm"])
   com<-ifelse(nchar(com)==3,com,ifelse(nchar(com)==2,paste0("0",com),paste0("00",com)))
   insee<-paste0(dep,com)
@@ -576,7 +575,6 @@ rm(corrections)
 
 #Importation de la table
 base_cc <- read.xlsx2("../data/base_cc_comparateur.xls",sheetIndex = 1,startRow=6,header=T)
-base_cc$insee<-as.character(base_cc$CODGEO)
 
 #Retrait des villages fran?ais de la Meuse d?truits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 base_cc <- base_cc[!(base_cc$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
@@ -590,6 +588,9 @@ for(i in 5:ncol(base_cc)){
   base_cc[,i]<-as.numeric(as.character(base_cc[,i]))
 }
 base_cc<-base_cc[!is.na(base_cc$P15_POP),]
+
+base_cc$insee<-as.character(base_cc$CODGEO)
+base_cc<-base_cc[substr(base_cc$insee ,1,2)!="97",]
 
 #Tests ensemblistes
 fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.character(communes@data$nom)),data.frame(insee=as.character(base_cc$CODGEO),LIBGEO=as.character(base_cc$LIBGEO)),by="insee",all=T)
@@ -608,16 +609,20 @@ rm(fusion)
 
 data_demo<-read.xlsx2("../data/base-cc-evol-struct-pop-2015.xls",sheetIndex = 1,startRow=6,header=T)
 
-#Retrait des villages fran?ais de la Meuse d?truits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
+#Retrait des villages francais de la Meuse detruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 data_demo <- data_demo[!(data_demo$CODGEO %in% c("55039","55050","55139","55189","55239","55307")),]
 
-
-
-
-#Retrait des ?les
+#Retrait des iles
 data_demo <- data_demo[!(data_demo$CODGEO %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
 
+
+for(i in 5:ncol(data_demo)){
+  data_demo[,i]<-as.numeric(as.character(data_demo[,i]))
+}
 data_demo$insee <- as.character(data_demo$CODGEO)
+
+#Restriction a la France metropolitaine
+data_demo<-data_demo[substr(data_demo$insee ,1,2)!="97",]
 
 fusion <- merge(data.frame(insee=as.character(communes@data$insee),nom=as.character(communes@data$nom)),data.frame(insee=as.character(data_demo$CODGEO),LIBGEO=as.character(data_demo$LIBGEO)),by="insee",all=T)
 
@@ -632,15 +637,13 @@ rm(fusion)
 #                       FUSION                         #
 #------------------------------------------------------#
 
-communes <- merge(communes,base_cc,by="insee",sort=F)
-communes <- merge(communes,data_demo,by="insee",sort=F)
-communes <- merge(communes,pres2,by="insee",sort=F)
-communes <- communes@data[,c("insee","nom","P15_POP.x","MED15","P15_CHOM1564","P15_ACT1564","P15_POP0014.x","P15_POP1529.x","P15_POP3044.x","P15_POP4559.x","P15_POP6074.x","P15_POP7589.x","P15_POP90P.x","C15_POP15P.y","C15_POP15P_CS1.y","C15_POP15P_CS2.y","C15_POP15P_CS3.y","C15_POP15P_CS4.y","C15_POP15P_CS5.y","C15_POP15P_CS6.y","C15_POP15P_CS7.y","C15_POP15P_CS8.y","C15_F15P.x","pct_macron_votants.y")]
+communes <- merge(communes,base_cc[,c("insee","P15_POP","MED15","P15_CHOM1564","P15_ACT1564")],by="insee")
+communes <- merge(communes,data_demo[,c("insee","P15_POP0014","P15_POP1529","P15_POP3044","P15_POP4559","P15_POP6074","P15_POP7589","P15_POP90P","C15_POP15P","C15_POP15P_CS1","C15_POP15P_CS2","C15_POP15P_CS3","C15_POP15P_CS4","C15_POP15P_CS5","C15_POP15P_CS6","C15_POP15P_CS7","C15_POP15P_CS8","C15_F15P")],by="insee")
+communes <- merge(communes,pres2[,c("insee","pct_macron_votants")],by="insee")
 
 
-
-communes@data$TCHOM_15 <- communes@data$P15_CHOM1564/communes@data$P15_ACT1564
-communes@data$F_PROP <- communes@data$C15_F15P/communes@data$C15_POP15P
+communes@data$TCHOM_15 <- communes@data$P15_CHOM1564/communes@data$P15_ACT1564*100
+communes@data$F_PROP <- communes@data$C15_F15P/communes@data$C15_POP15P*100
 
 communes@data$P15_PROP0014<-communes@data$P15_POP0014/communes@data$P15_POP*100
 communes@data$P15_PROP1529<-communes@data$P15_POP1529/communes@data$P15_POP*100
@@ -658,3 +661,5 @@ communes@data$C15_PROP15P_CS5<-communes@data$C15_POP15P_CS5/communes@data$C15_PO
 communes@data$C15_PROP15P_CS6<-communes@data$C15_POP15P_CS6/communes@data$C15_POP15P*100
 communes@data$C15_PROP15P_CS7<-communes@data$C15_POP15P_CS7/communes@data$C15_POP15P*100
 communes@data$C15_PROP15P_CS8<-communes@data$C15_POP15P_CS8/communes@data$C15_POP15P*100
+
+save(communes,carteCommune.nb,europe,file="../data/donnees_projet.RData")
