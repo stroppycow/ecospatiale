@@ -9,7 +9,7 @@ library(spdep)
 
 # Objectifs :
 # - Importer les differents fichiers de donnees en objet R 
-# - Assurer la cohernce entre les differentes sources de donn?es
+# - Assurer la cohernce entre les differentes sources de donnees
 
 # Champs : Communes de France metropolitaine
 
@@ -24,7 +24,7 @@ communes@data$insee<-as.character(communes@data$insee)
 #Retrait de l'outre-mer
 communes <- subset(communes,!(substr(communes@data$insee,1,2)=="97"))
 
-#Vérification que le code insee est une cle de jointude (test de doublons)
+#Verification que le code insee est une cle de jointude (test de doublons)
 communes@data[which(as.character(communes@data$insee) %in% names(which(table(communes@data$insee)>1))),]
 
 #Probleme avec les polygones pour la ville d'Annecy (74010)
@@ -90,7 +90,7 @@ pres2$pct_nuls_votants<-as.numeric(as.character(pres2$pct_nuls_votants))
 pres2$pct_votants_inscrits<-as.numeric(as.character(pres2$pct_votants_inscrits))
 
 
-#Restriction de l'etude ? la France metropolitaine
+#Restriction de l'etude a la France metropolitaine
 pres2<-pres2[!(pres2$codedep %in% c("ZZ","ZS","ZP","ZW","ZX","ZN","ZM","ZA","ZB","ZC","ZD")),]
 
 
@@ -111,8 +111,6 @@ fusion[is.na(fusion$nom),c("insee","libcomm")]
 
 fusion[is.na(fusion$libcomm),c("insee","nom")]
 #Conclusion : Certaines communes sont dans le shapefile mais pas dans le fichier de resultats
-#2 problemes :
-#-Polygones pour Saint-Pierre et Miquelon qui a ete retire de l'etude (97501,97502)
 #-Polygones pour les villages francais de la Meuse detruits pendant la premiere guerre mondiale (55039,55050,55139,55189,55239,55307)
 
 rm(dfShape)
@@ -126,7 +124,7 @@ pres2[pres2$pct_macron_votants==0,c("insee","libcomm","n_lepen")]
 
 #Retrait communes dont le vote a ete annule par le conseil constitutionnel (Maconcourt,Guinecourt,Fontaines,Vaudreville,Savenay,Asquins,La Chapelle-sur-Usson,Vendoeuvres,Lagamas,Canteleux,Wallon-Cappel,Sainte-Foy,Montbel,Millas) + 2 communes ayant vote uniquement pour Marine Le Pen (Ornes, They-sous-Vaudemont)
 communes <- subset(communes,!(communes@data$insee %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173")))
-pres2<- pres2[pres2$insee %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173"),]
+pres2<- pres2[!(pres2$insee %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173")),]
 
 #------------------------------------------------#
 #           Shapefile europe                     #
@@ -183,7 +181,7 @@ dfAdj$nom <- sapply(as.character(dfAdj$insee),function(x){
 
 fusion<-merge(dfCommune,dfAdj,by="insee",all=T)
 
-#Communes dans l'ensemble C et pas dans le fichier des communes adjacentes
+#Communes dans la France metropolitaine et pas dans le fichier des communes adjacentes
 fusion[which(is.na(fusion$nom)),c("insee","nomCom")]
 
 #Traitement des problemes
@@ -588,7 +586,7 @@ base_cc <- base_cc[!(base_cc$CODGEO %in% c("55039","55050","55139","55189","5523
 base_cc <- base_cc[!(base_cc$CODGEO %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
 
 #Retrait communes dont le vote a ete annule par le conseil constitutionnel (Maconcourt,Guinecourt,Fontaines,Vaudreville,Savenay,Asquins,La Chapelle-sur-Usson,Vendoeuvres,Lagamas,Canteleux,Wallon-Cappel,Sainte-Foy,Montbel,Millas) + 2 communes ayant vote uniquement pour Marine Le Pen (Ornes, They-sous-Vaudemont)
-base_cc<- base_cc[base_cc$insee %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173"),]
+base_cc<- base_cc[!(base_cc$CODGEO %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173")),]
 
 
 #Modification des types des variables base_cc$LIBGEO<-as.character(base_cc$LIBGEO)
@@ -624,7 +622,7 @@ data_demo <- data_demo[!(data_demo$CODGEO %in% c("55039","55050","55139","55189"
 data_demo <- data_demo[!(data_demo$CODGEO %in% c("17004","22016","29082","29083","29084","29155","56069","56085","56086","56087","56088","85113","97110","97130","97131")),]
 
 #Retrait communes dont le vote a ete annule par le conseil constitutionnel (Maconcourt,Guinecourt,Fontaines,Vaudreville,Savenay,Asquins,La Chapelle-sur-Usson,Vendoeuvres,Lagamas,Canteleux,Wallon-Cappel,Sainte-Foy,Montbel,Millas) + 2 communes ayant vote uniquement pour Marine Le Pen (Ornes, They-sous-Vaudemont)
-data_demo<- data_demo[data_demo$insee %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173"),]
+data_demo<- data_demo[!(data_demo$CODGEO %in% c("09200","34125","36232","44195","50621","54516","55394","59634","62210","62396","63088","66108","85214","88278","89021","89173")),]
 
 
 for(i in 5:ncol(data_demo)){
@@ -676,5 +674,7 @@ communes@data$C15_PROP15P_CS8<-communes@data$C15_POP15P_CS8/communes@data$C15_PO
 rm(pres2)
 rm(data_demo)
 rm(base_cc)
+rm(i)
+rm(x)
 
 save(communes,carteCommune.nb,europe,cont.w,file="../data/donnees_projet.RData")
