@@ -35,8 +35,6 @@ Comp_lag <- function(x){
   com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
   v_MED<-lag.listw(cont.w,com2@data$MED15)
   com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
-  v_MED<-lag.listw(cont.w,com2@data$MED15)
-  com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
   v_MED2<-lag.listw(cont.w,com2@data$MED15)
   com2@data[is.na(communes@data$MED15),]$MED15=v_MED2[is.na(communes@data$MED15)]
   com2@data
@@ -49,7 +47,6 @@ Ilots <- function(x){
   return (Comp_lag(x)[v_tx_MED1==x,c("insee","MED15")])
 }
 
-mean(com2@data$MED15,na.rm=T)
 moran.test(Comp_lag(argmin)$MED15, cont.w)
 
 com2@data=Comp_lag(argmin)
@@ -82,6 +79,15 @@ remplirVoisinage<-function(df,variable,nb,iter){
 }
 
 com2@data$MED15_2 <- remplirVoisinage(communes@data,"MED15",carteCommune.nb,0)
+
+#Lissage
+n<-3
+for(i in 1:n){
+  v_MED<-lag.listw(cont.w,com2@data$MED15_2)
+  com2@data[is.na(communes@data$MED15),]$MED15_2=v_MED[is.na(communes@data$MED15)]
+}
+
+
 com2@data$diff <-com2@data$MED15-com2@data$MED15_2
 which.max(com2@data$diff)
-com2@data[35116,c("insee","nom","MED15","MED15_2")]
+com2@data[com2@data$diff>2000 | com2@data$diff< (-2000),c("insee","nom","MED15","MED15_2","P15_POP.x")]
