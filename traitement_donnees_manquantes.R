@@ -83,5 +83,5 @@ remplirVoisinage<-function(df,variable,nb,iter){
 
 com2@data$MED15_2 <- remplirVoisinage(communes@data,"MED15",carteCommune.nb,0)
 com2@data$diff <-com2@data$MED15-com2@data$MED15_2
-which.max(com2@data$diff)
-com2@data[35116,c("insee","nom","MED15","MED15_2")]
+
+com2@data[which(com2@data$diff>2000 | com2@data$diff< (-2000)),c("insee","nom","MED15","MED15_2")]
