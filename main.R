@@ -12,7 +12,7 @@ if(file.exist("../data/donnees_projet.RData")){
   save(communes,carteCommune.nb,europe,cont.w,file="../data/donnees_projet.RData")
 }
 
-
 #Statistiques descriptives
+
 
 #Modelisation econometrique
