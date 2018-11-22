@@ -9,8 +9,8 @@ if(file.exist("../data/donnees_projet.RData")){
 }else{
   source("importation_donnees.R")
   source("traitement_donnees_manquantes.R")
+  save(communes,carteCommune.nb,europe,cont.w,file="../data/donnees_projet.RData")
 }
 
 #Statistiques descriptives
-
 #Modelisation econometrique

@@ -9,7 +9,7 @@ library(spdep)
 
 # Objectifs :
 # - Importer les differents fichiers de donnees en objet R 
-# - Assurer la cohernce entre les differentes sources de donnees
+# - Assurer la coherence entre les differentes sources de donnees
 
 # Champs : Communes de France metropolitaine
 
@@ -676,5 +676,3 @@ rm(data_demo)
 rm(base_cc)
 rm(i)
 rm(x)
-
-save(communes,carteCommune.nb,europe,cont.w,file="../data/donnees_projet.RData")

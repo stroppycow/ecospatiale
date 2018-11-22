@@ -1,7 +1,5 @@
-apply(is.na(communes@data),MARGIN=2,FUN="sum")
-
-library(spdep)
-
+sommeManquante<-apply(is.na(communes@data),MARGIN=2,FUN="sum")
+sommeManquante[sommeManquante>0]
 
 #------------------------------------------------#
 #           Gestion des NA de MED15              #
@@ -10,46 +8,46 @@ library(spdep)
 com2<-communes
 
 #On trouve la valeur initiale d'imputation qui minimise la variance de l'ecart entre la valeur imputé et la valeur des voisins
-NA_MED <- function(x){
-  com2@data[is.na(communes@data$MED15),]$MED15=x
-  v_MED15<-lag.listw(cont.w,com2@data$MED15)
-  a <- (com2@data$MED15-v_MED15)[is.na(communes@data$MED15)]
-  var(a)
-}
-
-c<- 19800:20000
-d<-sapply(c,FUN="NA_MED")
-plot(c,d) 
-argmin <- c[which.min(d)] #19926
-
-#On inpute la valeur itérativement à partir des communes voisines
-Comp_lag <- function(x){
-  com2@data[is.na(communes@data$MED15),]$MED15=x
-  v_MED<-lag.listw(cont.w,com2@data$MED15)
-  com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
-  v_MED<-lag.listw(cont.w,com2@data$MED15)
-  com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
-  v_MED<-lag.listw(cont.w,com2@data$MED15)
-  com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
-  v_MED<-lag.listw(cont.w,com2@data$MED15)
-  com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
-  v_MED<-lag.listw(cont.w,com2@data$MED15)
-  com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
-  v_MED2<-lag.listw(cont.w,com2@data$MED15)
-  com2@data[is.na(communes@data$MED15),]$MED15=v_MED2[is.na(communes@data$MED15)]
-  com2@data
-}
-
-#Visualisation des Ilots
-Ilots <- function(x){
-  com2@data[is.na(communes@data$MED15),]$MED15=rep(x)
-  v_tx_MED1<-lag.listw(cont.w,com2@data$MED15)
-  return (Comp_lag(x)[v_tx_MED1==x,c("insee","MED15")])
-}
-
-moran.test(Comp_lag(argmin)$MED15, cont.w)
-
-com2@data=Comp_lag(argmin)
+# NA_MED <- function(x){
+#   com2@data[is.na(communes@data$MED15),]$MED15=x
+#   v_MED15<-lag.listw(cont.w,com2@data$MED15)
+#   a <- (com2@data$MED15-v_MED15)[is.na(communes@data$MED15)]
+#   var(a)
+# }
+# 
+# c<- 19800:20000
+# d<-sapply(c,FUN="NA_MED")
+# plot(c,d) 
+# argmin <- c[which.min(d)] #19926
+# 
+# #On inpute la valeur itérativement à partir des communes voisines
+# Comp_lag <- function(x){
+#   com2@data[is.na(communes@data$MED15),]$MED15=x
+#   v_MED<-lag.listw(cont.w,com2@data$MED15)
+#   com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
+#   v_MED<-lag.listw(cont.w,com2@data$MED15)
+#   com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
+#   v_MED<-lag.listw(cont.w,com2@data$MED15)
+#   com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
+#   v_MED<-lag.listw(cont.w,com2@data$MED15)
+#   com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
+#   v_MED<-lag.listw(cont.w,com2@data$MED15)
+#   com2@data[is.na(communes@data$MED15),]$MED15=v_MED[is.na(communes@data$MED15)]
+#   v_MED2<-lag.listw(cont.w,com2@data$MED15)
+#   com2@data[is.na(communes@data$MED15),]$MED15=v_MED2[is.na(communes@data$MED15)]
+#   com2@data
+# }
+# 
+# #Visualisation des Ilots
+# Ilots <- function(x){
+#   com2@data[is.na(communes@data$MED15),]$MED15=rep(x)
+#   v_tx_MED1<-lag.listw(cont.w,com2@data$MED15)
+#   return (Comp_lag(x)[v_tx_MED1==x,c("insee","MED15")])
+# }
+# 
+# moran.test(Comp_lag(argmin)$MED15, cont.w)
+# 
+# com2@data=Comp_lag(argmin)
 
 #Version recursive
 
@@ -86,7 +84,28 @@ for(i in 1:n){
   v_MED<-lag.listw(cont.w,com2@data$MED15_2)
   com2@data[is.na(communes@data$MED15),]$MED15_2=v_MED[is.na(communes@data$MED15)]
 }
+com2@data$MED15 <-com2@data$MED15_2
 
+#Taux de chômage Trébons-de-Luchon =0
+com2@data[com2@data$insee=="31559","TCHOM_15"]<-0.0
 
-com2@data$diff <-com2@data$MED15-com2@data$MED15_2
+#Imputation pour les variables :
+#F_PROP, C15_PROP15P_CS1, C15_PROP15P_CS2, C15_PROP15P_CS3, C15_PROP15P_CS4, C15_PROP15P_CS5, C15_PROP15P_CS6, C15_PROP15P_CS7, C15_PROP15P_CS8
+#Surles communes de :
+#Douaumont, Molring, Leménil-Mitry,  Rochefourchat, La Bâtie-des-Fonds, Caubous, Casterets
 
+com2@data$F_PROP <- remplirVoisinage(communes@data,"F_PROP",carteCommune.nb,0)
+com2@data$C15_PROP15P_CS1 <- remplirVoisinage(communes@data,"C15_PROP15P_CS1",carteCommune.nb,0)
+com2@data$C15_PROP15P_CS2 <- remplirVoisinage(communes@data,"C15_PROP15P_CS2",carteCommune.nb,0)
+com2@data$C15_PROP15P_CS3 <- remplirVoisinage(communes@data,"C15_PROP15P_CS3",carteCommune.nb,0)
+com2@data$C15_PROP15P_CS4 <- remplirVoisinage(communes@data,"C15_PROP15P_CS4",carteCommune.nb,0)
+com2@data$C15_PROP15P_CS5 <- remplirVoisinage(communes@data,"C15_PROP15P_CS5",carteCommune.nb,0)
+com2@data$C15_PROP15P_CS6 <- remplirVoisinage(communes@data,"C15_PROP15P_CS6",carteCommune.nb,0)
+com2@data$C15_PROP15P_CS7 <- remplirVoisinage(communes@data,"C15_PROP15P_CS7",carteCommune.nb,0)
+com2@data$C15_PROP15P_CS8 <- remplirVoisinage(communes@data,"C15_PROP15P_CS8",carteCommune.nb,0)
+
+communes<-com2
+sommeManquante<-apply(is.na(communes@data),MARGIN=2,FUN="sum")
+sommeManquante[sommeManquante>0]
+
+rm(sommeManquante)
