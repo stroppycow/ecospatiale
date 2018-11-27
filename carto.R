@@ -89,8 +89,46 @@ dev.off()
 ### Test de Moran, Donn√©es Brutes
 moran.test(communes@data$pct_macron_votants, cont.w)
 
+
 ### Graphique de Moran
-moran.plot(x=communes@data$pct_macron_votants,cont.w,xlab="Macron",ylab="Taux dans le voisinage",labels=as.character(communes@data$insee))
+
+
+moran.plot(x=communes@data$pct_macron_votants,cont.w,
+           xlab="Taux de vote Macron",ylab="Taux dans le voisinage",labels=F)
+
+plotDeMoran <- function(var,nom){
+  lagvar <- lag.listw(cont.w,var) 
+  plot(var, lagvar,
+       xlab=nom,ylab="Voisinage")
+  abline(v=mean(lagvar),lty=2)
+  abline(h=mean(var),lty=2)
+}
+
+
+plotDeMoran(communes@data$pct_macron_votants, "Taux de vote Macron")
+
+par(mfrow=c(2,4))
+
+plotDeMoran(log(communes@data$P15_POP), "Population")
+plotDeMoran(communes@data$MED15, "Revenu moyen")
+plotDeMoran(communes@data$TCHOM_15, "ChÙmage")
+plotDeMoran(communes@data$F_PROP, "Proportion de femmes")
+plotDeMoran(communes@data$P15_PROP0014, "Proportion de 0-14 ans")
+plotDeMoran(communes@data$P15_PROP1529, "Proportion de 15-29 ans")
+plotDeMoran(communes@data$P15_PROP3044, "Proportion de 30-44 ans")
+plotDeMoran(communes@data$P15_PROP4559, "Proportion de 45-59 ans")
+plotDeMoran(communes@data$P15_PROP6074, "Proportion de 60-74 ans")
+plotDeMoran(communes@data$P15_PROP7589, "Proportion de 75-89 ans")
+plotDeMoran(communes@data$P15_PROP90P, "Proportion de plus de 90 ans")
+plotDeMoran(communes@data$C15_PROP15P_CS1, "Proportion d'agriculteurs")
+plotDeMoran(communes@data$C15_PROP15P_CS2, "Proportion d'artisans, commercants et chefs d'entreprise ")
+plotDeMoran(communes@data$C15_PROP15P_CS3, "Proportion de cadres et professions intellectuelles supÈrieures")
+plotDeMoran(communes@data$C15_PROP15P_CS4, "Proportion de professions intermÈdiaires")
+plotDeMoran(communes@data$C15_PROP15P_CS5, "Proportion d'employÈs")
+plotDeMoran(communes@data$C15_PROP15P_CS6, "Proportion d'ouvriers")
+plotDeMoran(communes@data$C15_PROP15P_CS7, "Proportion de retraitÈs")
+plotDeMoran(communes@data$C15_PROP15P_CS8, "Proportion de PCS autre ")
+
 
 ### ReprÈsentation cartographique du graphique de Moran
 vPal4 <- rev(brewer.pal(n = 4, name = "RdYlBu"))
@@ -101,7 +139,6 @@ communes@data$hs[communes@data$v_tx>=mean(communes@data$pct_macron_votants) & co
 communes@data$hs[communes@data$v_tx<mean(communes@data$pct_macron_votants) & communes@data$pct_macron_votants>=mean(communes@data$pct_macron_votants)]<-2.0
 communes@data$hs[communes@data$v_tx<mean(communes@data$pct_macron_votants) & communes@data$pct_macron_votants<mean(communes@data$pct_macron_votants)]<-1.0
 
-communes@data$hs<-communes@data$hs
 x1<-bbox(communes)[1,1]
 x2<-bbox(communes)[1,2]
 communes@data$Colors <- as.character(vPal4[as.numeric(communes@data$hs)])
