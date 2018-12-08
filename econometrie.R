@@ -1,13 +1,27 @@
+<<<<<<< HEAD
 library(spdep)
 library(fields)
 library(rgeos)
 library(rgdal)
+=======
+#-------------------------------------------#
+#                   MCO                     #
+#-------------------------------------------#
+load("../data/donnees_projet.Rdata")
+
+>>>>>>> c1b5a0928d9c6caa12e9efdc754f4ec721fdedd7
 
 print(paste0(Sys.time()," : Chargement des données"))
 load("../data/donnees_projet.RData")
 
+<<<<<<< HEAD
 formule<-pct_macron_votants~log(P15_POP)+log(MED15)+TCHOM_15+P15_PROP0014+P15_PROP0014+P15_PROP1529+P15_PROP4559+P15_PROP6074+P15_PROP7589+P15_PROP90P+C15_PROP15P_CS1+C15_PROP15P_CS2+C15_PROP15P_CS3+C15_PROP15P_CS5+C15_PROP15P_CS6+C15_PROP15P_CS7+C15_PROP15P_CS8
 formuleDurbin<-pct_macron_votants~log(P15_POP)+TCHOM_15+P15_PROP0014+P15_PROP0014+P15_PROP1529+P15_PROP4559+P15_PROP6074+P15_PROP7589+P15_PROP90P+C15_PROP15P_CS1+C15_PROP15P_CS2+C15_PROP15P_CS3+C15_PROP15P_CS5+C15_PROP15P_CS6+C15_PROP15P_CS7+C15_PROP15P_CS8
+=======
+names(modMCO$fitted.values>100)[modMCO$fitted.values>100]
+modMCO$fitted.values[c("83147","38286")]
+boxplot(modMCO$fitted.values)
+>>>>>>> c1b5a0928d9c6caa12e9efdc754f4ec721fdedd7
 
 #Modèle MCO
 modMCO<-lm(formule,data=communes@data)
@@ -16,8 +30,11 @@ plot(modMCO)
 
 # 1 ) Contiguite
 
+<<<<<<< HEAD
 #Test de Moran
 lm.morantest(modMCO,cont.w) 
+=======
+>>>>>>> c1b5a0928d9c6caa12e9efdc754f4ec721fdedd7
 
 #Tests
 lm.LMtests(modMCO,cont.w,test="LMerr")

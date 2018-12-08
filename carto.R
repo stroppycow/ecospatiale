@@ -74,7 +74,9 @@ communesF <- fortify(communes, region = "id")
 print(paste0(Sys.time()," - Merge France"))
 communesF <- merge(communesF, communes@data, by = "id")
 
+
 vPal4 <- rev(brewer.pal(n = 4, name = "RdYlBu"))
+
 
 # Europe
 europe@data$id <- rownames(europe@data)
