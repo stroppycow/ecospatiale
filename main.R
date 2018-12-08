@@ -4,7 +4,7 @@ if(!file.exists("../data/adj_comm.csv") | !file.exists("../data/base_cc_comparat
 } 
 
 #Importation des donnees sous en R et traitement des donnees manquantes
-if(file.exist("../data/donnees_projet.RData")){
+if(file.exists("../data/donnees_projet.RData")){
   load("../data/donnees_projet.RData")
 }else{
   source("importation_donnees.R")
@@ -13,6 +13,10 @@ if(file.exist("../data/donnees_projet.RData")){
 }
 
 #Statistiques descriptives
-
+source("stat_descriptives.R")
 
 #Modelisation econometrique
+source("econometrie.R")
+
+#Tracé des cartes relatives (Statistiques descriptives + résidus des modèles économétriques)
+source("carto.R")
